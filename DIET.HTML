@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>تتبع الوجبات - النسخة الهادئة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-body: #f4f6f8;
+            --bg-card: #ffffff;
+            --primary: #4f46e5;
+            --text-main: #2d3748;
+            --text-sec: #718096;
+            --c-pro: #ef4444;
+            --c-carb: #3b82f6;
+            --c-fat: #f59e0b;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --radius: 16px;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Tajawal', sans-serif;
+            margin: 0;
+            padding: 0;
+            padding-bottom: 90px;
+        }
+
+        /* --- Header --- */
+        header {
+            background: var(--bg-card);
+            padding: 20px;
+            border-bottom-left-radius: 25px;
+            border-bottom-right-radius: 25px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .quote {
+            font-size: 0.9rem;
+            color: var(--primary);
+            font-weight: 500;
+            margin-top: 5px;
+            opacity: 0.9;
+        }
+
+        /* --- Dashboard Chart Section --- */
+        .dashboard {
+            background: var(--bg-card);
+            margin: 0 20px 20px 20px;
+            padding: 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pie-chart {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(#e2e8f0 0% 100%);
+            transition: background 1s ease;
+        }
+        
+        .chart-inner {
+            position: absolute;
+            width: 75%;
+            height: 75%;
+            background: var(--bg-card);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .chart-inner span { font-size: 0.8rem; color: var(--text-sec); }
+        .chart-inner strong { font-size: 1.1rem; color: var(--text-main); }
+
+        .stats-text {
+            flex: 1;
+            padding-right: 20px;
+        }
+        
+        .stat-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        .dot { width: 10px; height: 10px; border-radius: 50%; margin-left: 8px; }
+        .dot.pro { background: var(--c-pro); }
+        .dot.carb { background: var(--c-carb); }
+        .dot.fat { background: var(--c-fat); }
+
+        /* --- Meal Cards --- */
+        .meal-list { padding: 0 20px; }
+
+        .meal-card {
+            background: var(--bg-card);
+            padding: 15px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 15px;
+            transition: transform 0.2s, opacity 0.3s;
+            position: relative;
+            border: 1px solid #f0f0f0;
+        }
+
+        .meal-card.completed {
+            opacity: 0.6;
+            background: #f8fafc;
+        }
+
+        .meal-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .meal-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .check-box {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #cbd5e0;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .meal-card.completed .check-box {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+        }
+        .meal-card.completed .check-box::after { content: '✓'; font-size: 0.9rem; }
+
+        .macro-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            background: #f7fafc;
+            padding: 10px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .macro-item { display: flex; flex-direction: column; }
+        .macro-label { font-size: 0.7rem; color: var(--text-sec); margin-bottom: 2px; }
+        .macro-val { font-size: 0.9rem; font-weight: 700; }
+        
+        .val-cal { color: var(--text-main); }
+        .val-pro { color: var(--c-pro); }
+        .val-carb { color: var(--c-carb); }
+        .val-fat { color: var(--c-fat); }
+
+        .ingredients {
+            font-size: 0.85rem;
+            color: var(--text-sec);
+            margin-bottom: 10px;
+        }
+
+        .del-btn {
+            position: absolute;
+            left: -10px;
+            top: -10px;
+            background: #fee2e2;
+            color: #ef4444;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* --- Floating Button --- */
+        .fab {
+            position: fixed;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            border: none;
+            font-size: 2rem;
+            box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.4);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        /* --- Character Slide-in Animation --- */
+        .character-overlay {
+            position: fixed;
+            bottom: 20px;
+            right: 0;
+            width: 150px;
+            height: auto;
+            z-index: 100;
+            transform: translateX(120%);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .character-overlay.active {
+            transform: translateX(-10px);
+        }
+
+        .char-img {
+            font-size: 6rem;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+        }
+        
+        .char-msg {
+            background: white;
+            padding: 8px 12px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 5px;
+            position: relative;
+        }
+        .char-msg::after {
+            content: ''; position: absolute; bottom: -5px; right: 20px;
+            border-width: 5px 5px 0; border-style: solid;
+            border-color: white transparent; display: block; width: 0;
+        }
+
+        /* --- Modal --- */
+        .modal-wrap {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.4);
+            display: none; justify-content: center; align-items: center;
+            z-index: 200; backdrop-filter: blur(3px);
+        }
+        .modal-content {
+            background: white; width: 90%; max-width: 350px;
+            padding: 20px; border-radius: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+            animation: popUp 0.3s ease;
+        }
+        @keyframes popUp { from {transform: scale(0.9); opacity: 0;} to {transform: scale(1); opacity: 1;} }
+
+        .input-group { margin-bottom: 12px; }
+        input {
+            width: 100%; padding: 12px; border: 1px solid #e2e8f0;
+            border-radius: 10px; background: #f8fafc;
+            font-family: inherit; font-size: 0.9rem;
+        }
+        input:focus { border-color: var(--primary); background: white; }
+        
+        .btn-save {
+            width: 100%; background: var(--primary); color: white;
+            padding: 12px; border: none; border-radius: 10px;
+            font-weight: bold; cursor: pointer;
+        }
+
+        .grid-2 { display: flex; gap: 10px; }
+
+        .reset-link {
+            display: block; text-align: center; margin-top: 30px;
+            color: var(--text-sec); font-size: 0.8rem; text-decoration: underline; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h2>يوميات البطل</h2>
+        <div class="quote" id="quote-text">...</div>
+    </header>
+
+    <div class="dashboard">
+        <div class="chart-container">
+            <div class="pie-chart" id="macro-chart"></div>
+            <div class="chart-inner">
+                <span id="total-cals">0</span>
+                <span>باقي</span>
+            </div>
+        </div>
+        <div class="stats-text">
+            <div class="stat-row"><span class="dot pro"></span> بروتين: <strong id="t-pro" style="margin-right:5px">0g</strong></div>
+            <div class="stat-row"><span class="dot carb"></span> كارب: <strong id="t-carb" style="margin-right:5px">0g</strong></div>
+            <div class="stat-row"><span class="dot fat"></span> دهون: <strong id="t-fat" style="margin-right:5px">0g</strong></div>
+        </div>
+    </div>
+
+    <div id="meals-list" class="meal-list"></div>
+
+    <div class="reset-link" onclick="resetAll()">بدء يوم جديد</div>
+
+    <button class="fab" onclick="toggleModal(true)">+</button>
+
+    <div class="modal-wrap" id="modal">
+        <div class="modal-content">
+            <h3 style="margin-top:0; color:var(--text-main)">إضافة وجبة</h3>
+            <div class="input-group"><input type="text" id="i-name" placeholder="اسم الوجبة (فطور، غداء...)"></div>
+            <div class="input-group"><input type="text" id="i-ing" placeholder="المكونات (باختصار)"></div>
+            <div class="grid-2 input-group">
+                <input type="number" id="i-cal" placeholder="سعرات (Cal)">
+                <input type="number" id="i-pro" placeholder="بروتين (g)">
+            </div>
+            <div class="grid-2 input-group">
+                <input type="number" id="i-carb" placeholder="كارب (g)">
+                <input type="number" id="i-fat" placeholder="دهون (g)">
+            </div>
+            <button class="btn-save" onclick="addMeal()">حفظ الوجبة</button>
+            <button style="width:100%; margin-top:10px; background:none; border:none; color:#777" onclick="toggleModal(false)">إلغاء</button>
+        </div>
+    </div>
+
+    <div class="character-overlay" id="character-box">
+        <div class="char-msg" id="char-text">عاش يا بطل!</div>
+        <div class="char-img">🦸‍♂️</div>
+    </div>
+
+    <script>
+        let meals = JSON.parse(localStorage.getItem('heroMeals')) || [];
+
+        const quotes = [
+            "طعام صحي = جسم قوي",
+            "الانضباط هو مفتاح النجاح",
+            "كل وجبة تقربك من هدفك",
+            "استمر، النتائج قادمة!"
+        ];
+
+        const cheers = [
+            "وحش!", "عاش يا بطل", "استمر!", "قوي جداً"
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderApp();
+            document.getElementById('quote-text').innerText = quotes[Math.floor(Math.random() * quotes.length)];
+        });
+
+        function renderApp() {
+            const list = document.getElementById('meals-list');
+            list.innerHTML = '';
+            
+            let tCal=0, tPro=0, tCarb=0, tFat=0;
+
+            meals.forEach((m, idx) => {
+                // التعديل هنا: نجمع فقط الوجبات غير المكتملة
+                // This counts only UNCHECKED meals towards the total displayed
+                if (!m.completed) {
+                    tCal += Number(m.cal); 
+                    tPro += Number(m.pro);
+                    tCarb += Number(m.carb); 
+                    tFat += Number(m.fat);
+                }
+
+                const div = document.createElement('div');
+                div.className = `meal-card ${m.completed ? 'completed' : ''}`;
+                div.innerHTML = `
+                    <button class="del-btn" onclick="deleteMeal(${idx})">x</button>
+                    <div class="meal-top">
+                        <span class="meal-title">${m.name}</span>
+                        <div class="check-box" onclick="toggleComplete(${idx})"></div>
+                    </div>
+                    <div class="ingredients">${m.ing}</div>
+                    <div class="macro-grid">
+                        <div class="macro-item"><span class="macro-label">سعرات</span><span class="macro-val val-cal">${m.cal}</span></div>
+                        <div class="macro-item"><span class="macro-label">بروتين</span><span class="macro-val val-pro">${m.pro}</span></div>
+                        <div class="macro-item"><span class="macro-label">كارب</span><span class="macro-val val-carb">${m.carb}</span></div>
+                        <div class="macro-item"><span class="macro-label">دهون</span><span class="macro-val val-fat">${m.fat}</span></div>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+
+            document.getElementById('total-cals').innerText = tCal;
+            document.getElementById('t-pro').innerText = tPro + 'g';
+            document.getElementById('t-carb').innerText = tCarb + 'g';
+            document.getElementById('t-fat').innerText = tFat + 'g';
+
+            updateChart(tPro, tCarb, tFat);
+        }
+
+        function updateChart(p, c, f) {
+            const total = p + c + f;
+            if (total === 0) {
+                document.getElementById('macro-chart').style.background = '#e2e8f0'; // رمادي عند الانتهاء
+                return;
+            }
+            
+            const degP = (p / total) * 360;
+            const degC = (c / total) * 360;
+            const degF = (f / total) * 360;
+
+            const chart = document.getElementById('macro-chart');
+            chart.style.background = `conic-gradient(
+                var(--c-pro) 0deg ${degP}deg,
+                var(--c-carb) ${degP}deg ${degP + degC}deg,
+                var(--c-fat) ${degP + degC}deg 360deg
+            )`;
+        }
+
+        function addMeal() {
+            const name = document.getElementById('i-name').value;
+            if(!name) return;
+
+            meals.push({
+                name: name,
+                ing: document.getElementById('i-ing').value || 'بدون تفاصيل',
+                cal: document.getElementById('i-cal').value || 0,
+                pro: document.getElementById('i-pro').value || 0,
+                carb: document.getElementById('i-carb').value || 0,
+                fat: document.getElementById('i-fat').value || 0,
+                completed: false
+            });
+
+            saveAndRender();
+            toggleModal(false);
+            document.querySelectorAll('input').forEach(i => i.value = '');
+        }
+
+        function toggleComplete(idx) {
+            meals[idx].completed = !meals[idx].completed;
+            saveAndRender();
+            
+            if (meals[idx].completed) {
+                slideCharacter();
+            }
+        }
+
+        function slideCharacter() {
+            const box = document.getElementById('character-box');
+            const txt = document.getElementById('char-text');
+            txt.innerText = cheers[Math.floor(Math.random() * cheers.length)];
+            
+            box.classList.add('active');
+            
+            setTimeout(() => {
+                box.classList.remove('active');
+            }, 2500);
+        }
+
+        function deleteMeal(idx) {
+            if(confirm('حذف الوجبة؟')) {
+                meals.splice(idx, 1);
+                saveAndRender();
+            }
+        }
+
+        function resetAll() {
+            if(confirm('بدء يوم جديد وحذف الكل؟')) {
+                meals = [];
+                saveAndRender();
+            }
+        }
+
+        function saveAndRender() {
+            localStorage.setItem('heroMeals', JSON.stringify(meals));
+            renderApp();
+        }
+
+        function toggleModal(show) {
+            document.getElementById('modal').style.display = show ? 'flex' : 'none';
+        }
+    </script>
+</body>
+</html>
